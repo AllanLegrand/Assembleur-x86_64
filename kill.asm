@@ -14,6 +14,9 @@ SYS_KILL equ 62
 section .data
 	err db 'kill : utilisation : kill [signal] pid', LF, NULL
 	taille_err equ $ - err
+	
+	errPid db 'Le kill a échoué (Mauvais PID ou droit manquant)', LF, NULL
+	taille_errPid equ $ - errPid
 
 section .text
 
@@ -32,7 +35,7 @@ arg1:
 	call convertisseur
 
 	mov rdi, rax ; le pid 
-	mov rsi, 15
+	mov rsi, 15 ; signal par defaut
 
 	call kill
 
@@ -81,6 +84,9 @@ kill:
 	mov rax, SYS_KILL
 	syscall
 
+	cmp rax, 0
+	jle erreur_pid
+
 exit:
 	mov rax, SYS_EXIT
 	xor rdi, rdi
@@ -89,8 +95,8 @@ exit:
 erreur_pid:
 	mov rax, SYS_WRITE
 	mov rdi, STDOUT
-	mov rsi, err
-	mov rdx, taille_err
+	mov rsi, errPid
+	mov rdx, taille_errPid
 	syscall
 
 erreur:
