@@ -1,6 +1,7 @@
 # Assembleur-x86_64
 
 ## 1. Prérequis
+
 ### 1.1 Obligatoire
 - Système d'exploitation Linux
 - Processeur avec l'architechture x86_64
@@ -14,6 +15,7 @@ sudo apt install nasm
 sudo apt install binutils
 ```
 ## 2. Structure
+
 ### 2.1 Section .data
 La section .data contient les définitions des variables initialisées à une ou plusieurs valeurs spécifiées.
 Déclaration :
@@ -33,6 +35,7 @@ Déclaration :
 .section .text
 ```
 ## 3. Registre (register)
+
 ### 3.1 Registres généraux
 | Nom des registres  | 64 bits | 32 bits | 16 bits | 8 bits | Description                                                                                                              |
 |--------------------|---------|---------|---------|--------|--------------------------------------------------------------------------------------------------------------------------|
@@ -91,7 +94,7 @@ Indicateur de statut et de controle du regsitre EFLAGS :
 | Extra Segment     | ES      | Utilisé comme segment additionnel pour certaines opérations.  |
 | FS                | FS      | Utilisé pour accéder à des structures de données spécifiques. |
 | GS                | GS      | Utilisé pour accéder à des structures de données spécifiques. |
-## 4 Appel Système (syscall)
+## 4. Appel Système (syscall)
 | Nom   | RAX | RDI                    | RSI                | RDX              | R8 | R10 | R9 |
 |-------|-----|------------------------|--------------------|------------------|----|-----|----|
 | read  | 0   | descripteur de fichier | tampon             | taille du tampon |    |     |    |
