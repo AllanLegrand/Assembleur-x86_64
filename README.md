@@ -1,6 +1,6 @@
 # Assembleur-x86_64
 
-## 1. Prérequis
+## 1. Prérequis
 
 ### 1.1 Obligatoire
 - Système d'exploitation Linux
@@ -14,7 +14,7 @@ sudo apt install nasm
 ```bash
 sudo apt install binutils
 ```
-## 2. Structure
+## 2. Structure
 
 ### 2.1 Section .data
 La section .data contient les définitions des variables initialisées à une ou plusieurs valeurs spécifiées.
@@ -34,7 +34,7 @@ Déclaration :
 ```asm
 .section .text
 ```
-## 3. Registre (register)
+## 3. Registre (register)
 
 ### 3.1 Registres généraux
 | Nom des registres  | 64 bits | 32 bits | 16 bits | 8 bits | Description                                                                                                              |
