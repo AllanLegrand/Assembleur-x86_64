@@ -56,12 +56,8 @@ section .data
 
 	errArg       db 'Erreur d arguments'                           , LF, NULL
 	taille_errArg       equ $ - errArg
-	errOuverture db 'Erreur d ouverture du fichier'                , LF, NULL
-	taille_errOuverture equ $ - errOuverture
 	errStat      db 'Erreur de recuperation des stats du fichier'  , LF, NULL
 	taille_errStat      equ $ - errStat
-	errFermeture db 'Erreur de fermeture du fichier'               , LF, NULL
-	taille_errFermeture equ $ - errFermeture
 
 section .text
 	global _start
@@ -73,16 +69,6 @@ _start:
 	jl erreur_arguments
 
 	mov rdi, [rsp+8] ; récupérer le premier argument
-
-	; Ouvrir le fichier
-	mov rax, SYS_OPEN
-	mov rsi, O_RDONLY ; flags (lecture seule)
-	mov rdx, O_RDONLY ; mode (inutile pour open en lecture seule)
-	syscall
-
-	; Vérifier les erreurs d'ouverture de fichier
-	cmp rax, 0
-	jl  erreur_ouverture ; Si rax est négatif, il y a eu une erreur d'ouverture de fichier
 
 	; Stat
 	mov rax, SYS_STAT
@@ -144,15 +130,6 @@ _start:
 	call affiche
 
 	; Fermer le fichier
-	pop rdi ; récupérer le descripteur de fichier
-	mov rax, SYS_CLOSE
-	syscall
-
-	; Vérifier les erreurs de fermeture
-	cmp rax, 0
-	jl  erreur_fermeture ; Si rax est négatif, il y a eu une erreur de fermeture de fichier
-
-	; Fermer le fichier
 	mov rax, SYS_CLOSE
 	xor rdi, rdi ; descripteur de fichier à fermer
 	syscall
@@ -187,26 +164,10 @@ erreur_arguments:
 
 	call fin
 
-erreur_ouverture:
-	; Gérer l'erreur d'ouverture de fichier
-	mov rsi, errOuverture 
-	mov rdx, taille_errOuverture
-	call affiche
-
-	call fin
-
 erreur_stat:
 	; Gérer l'erreur d'écriture dans le fichier
 	mov rsi, errStat
 	mov rdx, taille_errStat
-	call affiche
-
-	call fin
-
-erreur_fermeture:
-	; Gérer l'erreur de fermeture de fichier
-	mov rsi, errFermeture
-	mov rdx, taille_errFermeture
 	call affiche
 
 	call fin

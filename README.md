@@ -18,21 +18,78 @@ sudo apt install binutils
 
 ### 2.1 Section .data
 La section .data contient les définitions des variables initialisées à une ou plusieurs valeurs spécifiées.
+
 Déclaration :
 ```asm
 .section .data
+	[nom de la variable] [directives de définition de données] [valeur]
+	[nom de la variable] EQU [valeur] ; constante (64 bits)
 ```
+
+Directives de définition de données :
+| Nom                  | Symbole | Taille  |
+|----------------------|---------|---------|
+| Define byte          | DB      | 8 bits  |
+| Define word          | DW      | 16 bits |
+| Define doubleword    | DD      | 32 bits |
+| Define quadword      | DQ      | 64 bits |
+| Define extended word | DT      | 80 bits |
+
+Exemple :
+```asm
+.section .data
+	SAUT_LIGNE EQU 10
+	msg DB 'Bon', 106, 'our', SAUT_LIGNE, 0 ; 106 correspond a la valeur ascii de j, SAUT_LIGNE(10) au saut de ligne et 0 a la valeur NULL utilisé pour fermer une chaîne
+	lst DB 1, 4, 3, 5, 3
+	PI DD 3.14
+	PI DQ 3.141592653589793
+	taille EQU $ - msg                      ; taille du message (8, on ne compte pas le 0)
+```
+
 ### 2.2 Section .bss
 La section .bss contient les déﬁnitions des variables non-initialisées, c’est à dire uniquement allouées en mémoire.
+
 Déclaration :
 ```asm
 .section .bss
+	[nom de la variable] [directives de réservation de données] [taille]
 ```
+
+Directives de réservation de données :
+| Nom                   | Symbole | Taille  |
+|-----------------------|---------|---------|
+| Reserve byte          | resb    | 8 bits  |
+| Reserve word          | resw    | 16 bits |
+| Reserve doubleword    | resd    | 32 bits |
+| Reserve quadword      | resq    | 64 bits |
+| Reserve extended word | rest    | 80 bits |
+
+Exemple :
+```asm
+.section .bss
+	caractere resb 1
+	tabMesure resd 100        ; tableau de 100 doubleword
+	tabMesurePrecise resq 100 ; tableau de 100 quadword
+```
+
 ### 2.3 Section .text
 La section .text contient le code exécuté par un programme.
+
 Déclaration :
 ```asm
+SYS_EXIT equ 60 ; constante de l'appel système exit
+
 .section .text
+	global _start ; spécifie qu'on commence a _start
+	routine:
+		; opcode
+		ret ; retour (on reviens a la routine appelante)
+	_start:
+		; opcode
+		; On doit toujours appeler l'appel système exit a la fin d'un programme
+		xor rdi, rdi ; code de retour
+		mov rax, SYS_EXIT
+		syscall ; appel système
 ```
 ## 3. Registre (register)
 
@@ -85,6 +142,7 @@ Indicateur de statut et de controle du regsitre EFLAGS :
 | 17    | Virtual Interrupt Pending Flag   | VIP     | Indique la présence d'interruptions en mode virtuel-8086.                                                                |
 | 18    | Identification Flag              | ID      | Indique la disponibilité de l'instruction CPUID.                                                                         |
 | 19-31 | Reserved                         |         | Réservés, sans utilisation spécifiée.                                                                                    |
+
 ### 3.3 Registres de segment
 | Nom des registres | 16 bits | Description                                                   |
 |-------------------|---------|---------------------------------------------------------------|
@@ -94,11 +152,27 @@ Indicateur de statut et de controle du regsitre EFLAGS :
 | Extra Segment     | ES      | Utilisé comme segment additionnel pour certaines opérations.  |
 | FS                | FS      | Utilisé pour accéder à des structures de données spécifiques. |
 | GS                | GS      | Utilisé pour accéder à des structures de données spécifiques. |
-## 4. Appel Système (syscall)
-| Nom   | RAX | RDI                    | RSI                | RDX              | R8 | R10 | R9 |
-|-------|-----|------------------------|--------------------|------------------|----|-----|----|
-| read  | 0   | descripteur de fichier | tampon             | taille du tampon |    |     |    |
-| write | 1   | descripteur de fichier | tampon             | taille du tampon |    |     |    |
-| open  | 2   | nom du fichier         | flags              | mode             |    |     |    |
-| close | 3   | descripteur de fichier |                    |                  |    |     |    |
-| stat  | 4   | descipteur de fichier  | tampon de 144 bits |                  |    |     |    |
+
+## 4. Pile d'execution (call stack)
+
+## 5. Appel Système (syscall)
+| Nom                    | RAX | RDI                                                  | RSI                               | RDX                | R8    | R10                    | R9       |
+|------------------------|-----|------------------------------------------------------|-----------------------------------|--------------------|-------|------------------------|----------|
+| read                   | 0   | descripteur de fichier                               | tampon                            | taille du tampon   |       |                        |          |
+| write                  | 1   | descripteur de fichier                               | tampon                            | taille du tampon   |       |                        |          |
+| open                   | 2   | nom du fichier                                       | flags                             | mode               |       |                        |          |
+| close                  | 3   | descripteur de fichier                               |                                   |                    |       |                        |          |
+| stat                   | 4   | nom du fichier                                       | tampon de 144 bits                |                    |       |                        |          |
+| fstat                  | 5   | descripteur de fichier                               | tampon de 144 bits                |                    |       |                        |          |
+| lstat                  | 6   | nom du fichier                                       | tampon de 144 bits                |                    |       |                        |          |
+| poll                   | 7   | tampon de 8 bits * nombres de descripteur de fichier | nombres de descripteur de fichier | temps d'attente    |       |                        |          |
+| lseek                  | 8   | descripteur de fichier                               | décalage                          | origine            |       |                        |          |
+| nmap                   | 9   | adresse                                              | taille                            | protection         | flags | descripteur de fichier | décalage |
+| mprotect               | 10  | adresse                                              | taille                            | protection         |       |                        |          |
+| munmap                 | 11  | adresse                                              | taille                            |                    |       |                        |          |
+| brk                    | 12  | adresse de fin                                       |                                   |                    |       |                        |          |
+| getpid                 | 39  |                                                      |                                   |                    |       |                        |          |
+| rt_sigqueueinfo        | 133 | pid                                                  | signal                            | tampon de 128 bits |       |                        |          |
+| sched_getscheduler     | 145 | pid                                                  |                                   |                    |       |                        |          |
+| sched_get_priority_max | 146 | politique d'ordonnancement                           |                                   |                    |       |                        |          |
+| sched_get_priority_min | 147 | politique d'ordonnancement                           |                                   |                    |       |                        |          |
