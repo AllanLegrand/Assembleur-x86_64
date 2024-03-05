@@ -58,7 +58,9 @@ Déclaration :
 |---------------------|---------|---------|--------------------------------------------------------------------------------------------------------------------|
 | Instruction Pointer | RIP     |         | Contient l'adresse mémoire de l'instruction suivante à exécuter.                                                   |
 | Registre d'état     |         | EFLAGS  | Contient des indicateurs de statut, tels que les indicateurs de zéro, de signe, de retenue, etc (Voir ci-dessous). |
+
 Indicateur de statut et de controle du regsitre EFLAGS :
+
 | Bit   | Nom                              | Symbole | Description                                                                                                              |
 |-------|----------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------|
 | 0     | Carry Flag                       | CF      | Indique une retenue ou un emprunt lors des opérations arithmétiques.                                                     |
