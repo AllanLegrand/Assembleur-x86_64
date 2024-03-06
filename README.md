@@ -58,18 +58,18 @@ Déclaration :
 Directives de réservation de données :
 | Nom                   | Symbole | Taille  |
 |-----------------------|---------|---------|
-| Reserve byte          | resb    | 8 bits  |
-| Reserve word          | resw    | 16 bits |
-| Reserve doubleword    | resd    | 32 bits |
-| Reserve quadword      | resq    | 64 bits |
-| Reserve extended word | rest    | 80 bits |
+| Reserve byte          | RESB    | 8 bits  |
+| Reserve word          | RESW    | 16 bits |
+| Reserve doubleword    | RESD    | 32 bits |
+| Reserve quadword      | RESQ    | 64 bits |
+| Reserve extended word | REST    | 80 bits |
 
 Exemple :
 ```asm
 .section .bss
-	caractere resb 1
-	tabMesure resd 100        ; tableau de 100 doubleword
-	tabMesurePrecise resq 100 ; tableau de 100 quadword
+	caractere RESB 1
+	tabMesure RESD 100        ; tableau de 100 doubleword
+	tabMesurePrecise RESQ 100 ; tableau de 100 quadword
 ```
 
 ### 2.3 Section .text
@@ -87,6 +87,7 @@ SYS_EXIT equ 60 ; constante de l'appel système exit
 		; On doit toujours appeler l'appel système exit a la fin d'un programme
 		XOR RDI, RDI ; code de retour (0)
 		MOV RAX, SYS_EXIT
+
 		SYSCALL ; appel système
 ```
 
@@ -103,12 +104,13 @@ SYS_EXIT equ 60 ; constante de l'appel système exit
 		RET ; retour (on reviens a la routine appelante)
 	_start:
 		; instruction
-		MOV RAX, BYTE[msg+1] ; on bouge la valeur du deuxieme byte de msg (o) dans RAX
-		MOV RDI, msg ; on bouge l'adresse de msg dans RDI
+		MOV RAX, BYTE[msg+1] ;  la valeur du deuxieme byte de msg ('o' ou  111 en ascii) dans RAX
+		MOV RDI, msg ; l'adresse de msg dans RDI
 
 		; On doit toujours appeler l'appel système exit a la fin d'un programme
 		XOR RDI, RDI ; code de retour (0)
 		MOV RAX, SYS_EXIT
+
 		SYSCALL ; appel système
 ```
 ## 3. Registre (register)
@@ -203,3 +205,118 @@ Quand on appelle une fonction avec l'instruction call fonction, l'adresse de la 
 | sched_getscheduler     | 145 | pid                                                  |                                   |                    |       |                        |          |
 | sched_get_priority_max | 146 | politique d'ordonnancement                           |                                   |                    |       |                        |          |
 | sched_get_priority_min | 147 | politique d'ordonnancement                           |                                   |                    |       |                        |          |
+
+### 5.0 Read
+Exemple :
+```asm
+STDOUT EQU 1
+
+NULL EQU 0
+SAUT_LIGNE EQU 10
+
+SYS_READ EQU 0
+SYS_EXIT EQU 60
+
+section .bss
+	entree RESB 20 ; taille de la chaine a lire
+section .text
+global _start
+_start:
+	MOV RAX, SYS_READ
+	MOV RDI, entree
+	MOV RDX, 20
+
+	SYSCALL
+
+	MOV RAX, SYS_EXIT
+	XOR RDI, RDI
+
+	SYSCALL
+```
+
+### 5.1 Write
+Exemple :
+```asm
+STDOUT EQU 1
+
+NULL EQU 0
+SAUT_LIGNE EQU 10
+
+SYS_WRITE EQU 1
+SYS_EXIT EQU 60
+
+section .data
+	msg DB 'Bonjour', SAUT_LIGNE, NULL
+	taille EQU $ - msg
+section .text
+global _start
+_start:
+	MOV RAX, SYS_WRITE
+	MOV RDI, STDOUT
+	MOV RSI, msg
+	MOV RDX, taille
+
+	SYSCALL
+
+	MOV RAX, SYS_EXIT
+	XOR RDI, RDI
+
+	SYSCALL
+```
+
+### 5.2 Open
+Ouvre un fichier, avec comme parametre le nom du fichier a ouvrir, son mode d'ouverture et son mode de permission.
+Exemple :
+```asm
+NULL EQU 0
+SAUT_LIGNE EQU 10
+
+O_RDWR EQU 1 ; mode d'ouverture lecture et écriture
+
+SYS_WRITE EQU 1
+SYS_OPEN EQU 2
+SYS_EXIT EQU 60
+
+mode equ 0644o ; -rw-r--r--
+
+section .data
+	msg DB 'Bonjour', SAUT_LIGNE, NULL
+	taille EQU $ - msg
+	nomFichier DB 'fichier.txt', NULL
+section .text
+global _start
+_start:
+	MOV RAX, SYS_OPEN
+	MOV RDI, nomFichier
+	MOV RSI, O_RDWR
+	MOV RDX, mode
+
+	SYSCALL
+
+	; Vérifier les erreurs d'ouverture de fichier
+	CMP RAX, 0
+	JL .exit ; Si RAX est négatif, il y a eu une erreur
+
+	MOV RDI, RAX ; RAX contient le descripteur de fichier retourné par open
+	MOV RAX, SYS_WRITE
+	MOV RSI, msg
+	MOV RDX, taille
+
+	SYSCALL
+
+	; Vérifier les erreurs d'écriture
+	CMP RAX, 0
+	JL .exit ; Si RAX est négatif, il y a eu une erreur
+
+	MOV RAX, SYS_close 
+	; le descripteur de fichier est déja dans RDI
+	SYSCALL
+
+	; RAX sera négatif s'il y a une erreur
+
+	.exit:
+		MOV RAX, SYS_EXIT
+		XOR RDI, RDI
+		
+		SYSCALL
+```
