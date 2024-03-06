@@ -1,344 +1,344 @@
 bits 64
 
-NULL equ 0
-TAB equ 9
-LF equ 10
+NULL EQU 0
+TAB EQU 9
+LF EQU 10
 
-STDIN equ 0
-STDOUT equ 1
+STDIN EQU 0
+STDOUT EQU 1
 
-O_RDONLY equ 0
+O_RDONLY EQU 0
 
-SYS_READ equ 0
-SYS_WRITE equ 1
-SYS_OPEN equ 2
-SYS_CLOSE equ 3
-SYS_STAT equ 4
-SYS_EXIT equ 60
+SYS_READ EQU 0
+SYS_WRITE EQU 1
+SYS_OPEN EQU 2
+SYS_CLOSE EQU 3
+SYS_STAT EQU 4
+SYS_EXIT EQU 60
 
 section .bss
-	stat_struct resb 144 ; 144 octets pour la structure stat
+	stat_struct RESB 18 ; 18 octets = 144 bits pour la structure stat
 section .data
-	sautLigne db LF, NULL
+	sautLigne DB LF, NULL
 
-	messageFichier db 'Fichier : ', NULL
-	taille_messageFichier equ $ - messageFichier
+	messageFichier DB 'Fichier : ', NULL
+	taille_messageFichier EQU $ - messageFichier
 
-	messageTaille db 'Taille : ', NULL
-	taille_messageTaille equ $ - messageTaille
+	messageTaille DB 'Taille : ', NULL
+	taille_messageTaille EQU $ - messageTaille
 
-	messageBloc db TAB,'Blocs : ', NULL
-	taille_messageBloc equ $ - messageBloc
+	messageBloc DB TAB,'Blocs : ', NULL
+	taille_messageBloc EQU $ - messageBloc
 
-	messageBlocES db TAB,'Blocs d E/S : ', NULL
-	taille_messageBlocES equ $ - messageBlocES
+	messageBlocES DB TAB,'Blocs d E/S : ', NULL
+	taille_messageBlocES EQU $ - messageBlocES
 
-	messagePeripherique db 'Peripherique : ', NULL
-	taille_messagePeripherique equ $ - messagePeripherique
+	messagePeripherique DB 'Peripherique : ', NULL
+	taille_messagePeripherique EQU $ - messagePeripherique
 
-	messageInode db TAB,'Inode : ', NULL
-	taille_messageInode equ $ - messageInode
+	messageInode DB TAB,'Inode : ', NULL
+	taille_messageInode EQU $ - messageInode
 
-	messageLien db TAB,'Liens : ', NULL
-	taille_messageLien equ $ - messageLien
+	messageLien DB TAB,'Liens : ', NULL
+	taille_messageLien EQU $ - messageLien
 
-	messageAcces db 'Acces : ', NULL
-	taille_messageAcces equ $ - messageAcces
+	messageAcces DB 'Acces : ', NULL
+	taille_messageAcces EQU $ - messageAcces
 
-	messageUID db TAB,'UID : ', NULL
-	taille_messageUID equ $ - messageUID
+	messageUID DB TAB,'UID : ', NULL
+	taille_messageUID EQU $ - messageUID
 
-	messageGID db TAB,'GID : ', NULL
-	taille_messageGID equ $ - messageGID
+	messageGID DB TAB,'GID : ', NULL
+	taille_messageGID EQU $ - messageGID
 
-	info times 8 db NULL, NULL
-	taille_info equ $ - info
+	info TIMES 8 DB NULL, NULL
+	taille_info EQU $ - info
 
-	errArg       db 'Erreur d arguments'                           , LF, NULL
-	taille_errArg       equ $ - errArg
-	errStat      db 'Erreur de recuperation des stats du fichier'  , LF, NULL
-	taille_errStat      equ $ - errStat
+	errArg       DB 'Erreur d arguments'                           , LF, NULL
+	taille_errArg       EQU $ - errArg
+	errStat      DB 'Erreur de recuperation des stats du fichier'  , LF, NULL
+	taille_errStat      EQU $ - errStat
 
 section .text
 	global _start
 
 _start:
-	pop rax ; récupérer le nombre d'arguments
+	POP RAX ; récupérer le nombre d'arguments
 
-	cmp rax, 2 ; vérifier si le nombre d'arguments est correct
-	jl erreur_arguments
+	CMP RAX, 2 ; vérifier si le nombre d'arguments est correct
+	JL erreur_arguments
 
-	mov rdi, [rsp+8] ; récupérer le premier argument
+	MOV RDI, [RSP+8] ; récupérer le premier argument
 
 	; Stat
-	mov rax, SYS_STAT
-	lea rsi, stat_struct ; pointeur vers la structure stat
-	syscall
+	MOV RAX, SYS_STAT
+	LEA RSI, stat_struct ; pointeur vers la structure stat
+	SYSCALL
 
 	; Vérifier si stat a réussi
-	cmp rax, 0
-	jl  erreur_stat ; Si rax est négatif, il y a eu une erreur lors de l'appel à stat
+	CMP RAX, 0
+	JL  erreur_stat ; Si RAX est négatif, il y a eu une erreur lors de l'appel à stat
 
-	push rax ; sauvegarder le descripteur de fichier pour le fermer plus tard
+	push RAX ; sauvegarder le descripteur de fichier pour le fermer plus tard
 
 	; Afficher le nom du fichier
-	mov rsi, messageFichier
-	mov rdx, taille_messageFichier
+	MOV RSI, messageFichier
+	MOV RDX, taille_messageFichier
 
-	call affiche
+	CALL affiche
 
-	mov rdi, [rsp+16] ; récupérer le premier argument
-	call calcul_taille_chaine
-	mov rsi, [rsp+16] ; récupérer le premier argument
-	mov rdx, rcx ; taille maximale du nom de fichier
+	MOV RDI, [RSP+16] ; récupérer le premier argument
+	CALL calcul_taille_chaine
+	MOV RSI, [RSP+16] ; récupérer le premier argument
+	MOV RDX, RCX ; taille maximale du nom de fichier
 
-	call affiche
+	CALL affiche
 
-	; Afficher un retour à la ligne
-	mov rsi, sautLigne
-	mov rdx, 1
+	; Afficher un RETour à la ligne
+	MOV RSI, sautLigne
+	MOV RDX, 1
 
-	call affiche
+	CALL affiche
 
-	call afficheTaille
-	call afficheBloc
-	call afficheBlocES
+	CALL afficheTaille
+	CALL afficheBloc
+	CALL afficheBlocES
 
-	; Afficher un retour à la ligne
-	mov rsi, sautLigne
-	mov rdx, 1
+	; Afficher un RETour à la ligne
+	MOV RSI, sautLigne
+	MOV RDX, 1
 
-	call affiche
+	CALL affiche
 
-	call affichePeripherique
-	call afficheInode
-	call afficheLien
+	CALL affichePeripherique
+	CALL afficheInode
+	CALL afficheLien
 
-	mov rsi, sautLigne
-	mov rdx, 1
+	MOV RSI, sautLigne
+	MOV RDX, 1
 
-	call affiche
+	CALL affiche
 
-	call afficheAcces
-	call afficheUID
-	call afficheGID
+	CALL afficheAcces
+	CALL afficheUID
+	CALL afficheGID
 
-	; Afficher un retour à la ligne
-	mov rsi, sautLigne
-	mov rdx, 1
+	; Afficher un RETour à la ligne
+	MOV RSI, sautLigne
+	MOV RDX, 1
 
-	call affiche
+	CALL affiche
 
 	; Fermer le fichier
-	mov rax, SYS_CLOSE
-	xor rdi, rdi ; descripteur de fichier à fermer
-	syscall
+	MOV RAX, SYS_CLOSE
+	XOR RDI, RDI ; descripteur de fichier à fermer
+	SYSCALL
 
 fin:
 	; Terminer le programme
-	mov rax, SYS_EXIT
-	xor rdi, rdi
-	syscall
+	MOV RAX, SYS_EXIT
+	XOR RDI, RDI
+	SYSCALL
 
 affiche:
-	mov rax, SYS_WRITE
-	mov rdi, STDOUT
-	syscall
+	MOV RAX, SYS_WRITE
+	MOV RDI, STDOUT
+	SYSCALL
 
-	ret
+	RET
 
 calcul_taille_chaine:
-	mov rcx, -1
-	mov rax, NULL
-	repne scasb
-	not rcx
-	dec rcx
+	MOV RCX, -1
+	MOV RAX, NULL
+	REPNE SCASB
+	NOT RCX
+	DEC RCX
 
-	ret
+	RET
 
 erreur_arguments:
 	; Gérer l'erreur d'arguments
-	mov rsi, errArg
-	mov rdx, taille_errArg
-	call affiche
+	MOV RSI, errArg
+	MOV RDX, taille_errArg
+	CALL affiche
 
-	call fin
+	CALL fin
 
 erreur_stat:
 	; Gérer l'erreur d'écriture dans le fichier
-	mov rsi, errStat
-	mov rdx, taille_errStat
-	call affiche
+	MOV RSI, errStat
+	MOV RDX, taille_errStat
+	CALL affiche
 
-	call fin
+	CALL fin
 
 convertisseur:
-	xor rdx,rdx
-	div rcx
-	add dl, '0'
-	dec rdi
-	mov [rdi], dl
+	XOR RDX,RDX
+	DIV RCX
+	ADD dl, '0'
+	dec RDI
+	MOV [RDI], dl
 
-	test rax, rax
-	jnz convertisseur
+	TEST RAX, RAX
+	JNZ convertisseur
 
-	ret
+	RET
 
 afficheTaille:
 	; Afficher la taille du fichier
-	mov rsi, messageTaille
-	mov rdx, taille_messageTaille
+	MOV RSI, messageTaille
+	MOV RDX, taille_messageTaille
 
-	call affiche
+	CALL affiche
 
-	mov rax, [stat_struct+48] ; Taille du fichier 48 octets après le début de 
+	MOV RAX, [stat_struct+48] ; Taille du fichier 48 octets après le début de 
 	; la structure stat
 
-	mov rcx, 10 ; Base 10
-	call afficheInfo
+	MOV RCX, 10 ; Base 10
+	CALL afficheInfo
 
-	ret
+	RET
 
 afficheBloc:
 	; Afficher le nombre de blocs du fichier
-	mov rsi, messageBloc
-	mov rdx, taille_messageBloc
+	MOV RSI, messageBloc
+	MOV RDX, taille_messageBloc
 
-	call affiche
-	movzx rax, word [stat_struct+64] ; Nombre de blocs du fichier 48 octets après 
+	CALL affiche
+	MOVZX RAX, WORD [stat_struct+64] ; Nombre de blocs du fichier 48 octets après 
 	; le début de la structure stat
 
-		mov rcx, 10 ; Base 10
-	call afficheInfo
+	MOV RCX, 10 ; Base 10
+	CALL afficheInfo
 
-	ret
+	RET
 
 afficheBlocES:
 	; Afficher le nombre de blocs d'E/S du fichier
-	mov rsi, messageBlocES
-	mov rdx, taille_messageBlocES
+	MOV RSI, messageBlocES
+	MOV RDX, taille_messageBlocES
 
-	call affiche
-	mov rax, [stat_struct+56] ; Nombre de blocs du fichier 48 octets après 
+	CALL affiche
+	MOV RAX, [stat_struct+56] ; Nombre de blocs du fichier 48 octets après 
 	; le début de la structure stat
 
-	mov rcx, 10 ; Base 10
-	call afficheInfo
+	MOV RCX, 10 ; Base 10
+	CALL afficheInfo
 
-	ret
+	RET
 
 affichePeripherique:
 	; Afficher le peripherique du fichier
-	mov rsi, messagePeripherique
-	mov rdx, taille_messagePeripherique
+	MOV RSI, messagePeripherique
+	MOV RDX, taille_messagePeripherique
 
-	call affiche
+	CALL affiche
 
-	mov rax, [stat_struct+0] ; Taille du fichier 0 octets après le début de 
+	MOV RAX, [stat_struct+0] ; Taille du fichier 0 octets après le début de 
 	; la structure stat
 
-	mov rcx, 10 ; Base 10
-	call afficheInfo
+	MOV RCX, 10 ; Base 10
+	CALL afficheInfo
 
-	ret
+	RET
 
 
 afficheInode:
 	; Afficher l'inode du fichier
-	mov rsi, messageInode
-	mov rdx, taille_messageInode
+	MOV RSI, messageInode
+	MOV RDX, taille_messageInode
 
-	call affiche
+	CALL affiche
 
-	mov rax, [stat_struct+8] ; Taille du fichier 8 octets après le début de 
+	MOV RAX, [stat_struct+8] ; Taille du fichier 8 octets après le début de 
 	; la structure stat
 
-	mov rcx, 10 ; Base 10
-	call afficheInfo
+	MOV RCX, 10 ; Base 10
+	CALL afficheInfo
 
-	ret
+	RET
 
 afficheLien:
 	; Afficher le peripherique du fichier
-	mov rsi, messageLien
-	mov rdx, taille_messageLien
+	MOV RSI, messageLien
+	MOV RDX, taille_messageLien
 
-	call affiche
+	CALL affiche
 
-	mov rax, [stat_struct+16] ; Taille du fichier 16 octets après le début de 
+	MOV RAX, [stat_struct+16] ; Taille du fichier 16 octets après le début de 
 	; la structure stat
 
-	mov rcx, 10 ; Base 10
-	call afficheInfo
+	MOV RCX, 10 ; Base 10
+	CALL afficheInfo
 
-	ret
+	RET
 
 afficheAcces:
 	; Afficher les acces du fichier
-	mov rsi, messageAcces
-	mov rdx, taille_messageAcces
+	MOV RSI, messageAcces
+	MOV RDX, taille_messageAcces
 
-	call affiche
-	movzx rax, word[stat_struct+24] ; Nombre de blocs du fichier 24 octets après 
+	CALL affiche
+	MOVZX RAX, WORD[stat_struct+24] ; Nombre de blocs du fichier 24 octets après 
 	; le début de la structure stat
 
-	sub rax, 0x8000 ; on enleve 10000
+	SUB RAX, 0x8000 ; on enleve 10000
 
-	mov rcx, 8 ; Base octal
-	call afficheInfo
+	MOV RCX, 8 ; Base octal
+	CALL afficheInfo
 
-	ret
+	RET
 
 afficheUID:
 	; Afficher les acces du fichier
-	mov rsi, messageUID
-	mov rdx, taille_messageUID
+	MOV RSI, messageUID
+	MOV RDX, taille_messageUID
 
-	call affiche
-	movzx rax, word[stat_struct+28] ; Nombre de blocs du fichier 24 octets après 
+	CALL affiche
+	MOVZX RAX, WORD[stat_struct+28] ; Nombre de blocs du fichier 24 octets après 
 	; le début de la structure stat
 
-	mov rcx, 10 ; Base 10
-	call afficheInfo
+	MOV RCX, 10 ; Base 10
+	CALL afficheInfo
 
-	ret
+	RET
 
 afficheGID:
 	; Afficher les acces du fichier
-	mov rsi, messageGID
-	mov rdx, taille_messageGID
+	MOV RSI, messageGID
+	MOV RDX, taille_messageGID
 
-	call affiche
-	movzx rax, word[stat_struct+32] ; Nombre de blocs du fichier 24 octets après 
+	CALL affiche
+	MOVZX RAX, WORD[stat_struct+32] ; Nombre de blocs du fichier 24 octets après 
 	; le début de la structure stat
 
-	mov rcx, 10 ; Base 10
-	call afficheInfo
+	MOV RCX, 10 ; Base 10
+	CALL afficheInfo
 
-	ret
+	RET
 
 afficheInfo:
-	lea rdi, [info]
-	add rdi, taille_info
-	mov byte [rdi], 0
+	LEA RDI, [info]
+	ADD RDI, taille_info
+	MOV BYTE [RDI], 0
 
-	call convertisseur
+	CALL convertisseur
 
-	lea rsi, [info]
-	mov rdx, taille_info
+	LEA RSI, [info]
+	MOV RDX, taille_info
 
-	call affiche
+	CALL affiche
 
-	call nettoyage
+	CALL nettoyage
 
-	ret
+	RET
 
 nettoyage:
-	lea rdi, [info]
-	mov rcx, taille_info
+	LEA RDI, [info]
+	MOV RCX, taille_info
 
 	.boucle:
-		mov byte [rdi], NULL
-		inc rdi
+		MOV BYTE [RDI], NULL
+		inc RDI
 		loop .boucle
-	ret
+	RET

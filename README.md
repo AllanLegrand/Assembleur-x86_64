@@ -43,7 +43,7 @@ Exemple :
 	lst DB 1, 4, 3, 5, 3
 	PI DD 3.14
 	PI DQ 3.141592653589793
-	taille EQU $ - msg                      ; taille du message (8, on ne compte pas le 0)
+	taille EQU $ - msg ; taille du message (8, on ne compte pas le 0)
 ```
 
 ### 2.2 Section .bss
@@ -73,23 +73,43 @@ Exemple :
 ```
 
 ### 2.3 Section .text
-La section .text contient le code exécuté par un programme.
+La section .text contient le code exécuté par un programme.  
 
-Déclaration :
+Les directives de définition et reservation de données peuvent aussi servir comme spécificateur de taille.
+
+Exemple :
 ```asm
 SYS_EXIT equ 60 ; constante de l'appel système exit
 
 .section .text
 	global _start ; spécifie qu'on commence a _start
-	routine:
-		; opcode
-		ret ; retour (on reviens a la routine appelante)
 	_start:
-		; opcode
 		; On doit toujours appeler l'appel système exit a la fin d'un programme
-		xor rdi, rdi ; code de retour
-		mov rax, SYS_EXIT
-		syscall ; appel système
+		XOR RDI, RDI ; code de retour (0)
+		MOV RAX, SYS_EXIT
+		SYSCALL ; appel système
+```
+
+Déclaration :
+```asm
+SYS_EXIT equ 60 ; constante de l'appel système exit
+
+.section .data
+	msg DB 'Bon', 106, 'our', SAUT_LIGNE, 0
+.section .text
+	global _start ; spécifie qu'on commence a _start
+	routine:
+		; instruction
+		RET ; retour (on reviens a la routine appelante)
+	_start:
+		; instruction
+		MOV RAX, BYTE[msg+1] ; on bouge la valeur du deuxieme byte de msg (o) dans RAX
+		MOV RDI, msg ; on bouge l'adresse de msg dans RDI
+
+		; On doit toujours appeler l'appel système exit a la fin d'un programme
+		XOR RDI, RDI ; code de retour (0)
+		MOV RAX, SYS_EXIT
+		SYSCALL ; appel système
 ```
 ## 3. Registre (register)
 
@@ -158,7 +178,7 @@ La pile d'exécution est une structure de données pour gérer des sous-routines
 
 Elle fonctionne selon le principe de Last In, First Out (LIFO), ce qui signifie que la dernière donnée ajoutée à la pile est la première à être retirée.  
 
-Les registres RSP et RBP délimitent le cadre de la pile. RSP correspond a l'adresse sommet de la pile (dernier élément arrivé, adresse basse) et RBP a l'adresse de fin (premier élément arrivé, adresse haute). Il est possible d'empiler (ajouter) un élément au sommet pile grâce a l'instruction push et de dépiler (retiré) l'élément au sommet de la pile grâce a l'instruction pop. Il est aussi possible d'accéder à la valeur de n'importe quel élément de la pile depuis le sommet avec [RSP+x*8] où x est égal à l'index de l'élément à récupérer (le premier élément à comme index 0). Pareillement, on peut accéder à la valeur de n'importe quel élément de la pile depuis la fin avec [RBP-x*8] où x est égal à l'index depuis la fin de l'élément à récupérer (le dernier élément à comme index 0).
+Les registres RSP et RBP délimitent le cadre de la pile. RSP correspond a l'adresse sommet de la pile (dernier élément arrivé, adresse basse) et RBP a l'adresse de fin (premier élément arrivé, adresse haute). Il est possible d'empiler (ajouter) un élément au sommet pile grâce a l'instruction push et de dépiler (retiré) l'élément au sommet de la pile grâce a l'instruction pop. Il est aussi possible d'accéder à la valeur de n'importe quel élément de la pile depuis le sommet avec ```[RSP+x*8]``` où x est égal à l'index de l'élément à récupérer (le premier élément à comme index 0). Pareillement, on peut accéder à la valeur de n'importe quel élément de la pile depuis la fin avec ```[RBP-x*8]``` où x est égal à l'index depuis la fin de l'élément à récupérer (le dernier élément à comme index 0).
 
 Quand on appelle une fonction avec l'instruction call fonction, l'adresse de la fonction appelante est empiler, le registre RIP, registre stockant l'adresse de la prochaine instruction, prend alors la valeur de la fonction appelée. Une fois la fonction terminée, on utilise l'instruction ret pour dépiler l'adresse de la fonction appelante dans RIP pour revenir à la fonction.
 
