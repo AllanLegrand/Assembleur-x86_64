@@ -153,7 +153,14 @@ Indicateur de statut et de controle du regsitre EFLAGS :
 | FS                | FS      | Utilisé pour accéder à des structures de données spécifiques. |
 | GS                | GS      | Utilisé pour accéder à des structures de données spécifiques. |
 
-## 4. Pile d'execution (call stack)
+## 4. Pile d'exécution (call stack)
+La pile d'exécution est une structure de données pour gérer des sous-routines (fonctions, procédure) et suivre le flux d'exécution d'un programme.  
+
+Elle fonctionne selon le principe de Last In, First Out (LIFO), ce qui signifie que la dernière donnée ajoutée à la pile est la première à être retirée.  
+
+Les registres RSP et RBP délimitent le cadre de la pile. RSP correspond a l'adresse sommet de la pile (dernier élément arrivé, adresse basse) et RBP a l'adresse de fin (premier élément arrivé, adresse haute). Il est possible d'empiler (ajouter) un élément au sommet pile grâce a l'instruction push et de dépiler (retiré) l'élément au sommet de la pile grâce a l'instruction pop. Il est aussi possible d'accéder à la valeur de n'importe quel élément de la pile depuis le sommet avec [RSP+x*8] où x est égal à l'index de l'élément à récupérer (le premier élément à comme index 0). Pareillement, on peut accéder à la valeur de n'importe quel élément de la pile depuis la fin avec [RBP-x*8] où x est égal à l'index depuis la fin de l'élément à récupérer (le dernier élément à comme index 0).
+
+Quand on appelle une fonction avec l'instruction call fonction, l'adresse de la fonction appelante est empiler, le registre RIP, registre stockant l'adresse de la prochaine instruction, prend alors la valeur de la fonction appelée. Une fois la fonction terminée, on utilise l'instruction ret pour dépiler l'adresse de la fonction appelante dans RIP pour revenir à la fonction.
 
 ## 5. Appel Système (syscall)
 | Nom                    | RAX | RDI                                                  | RSI                               | RDX                | R8    | R10                    | R9       |
